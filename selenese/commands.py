@@ -1,9 +1,10 @@
 from selenium.common.exceptions import NoAlertPresentException, NoSuchElementException
+from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from tempfile import NamedTemporaryFile
-from selenese.locators import create_locator
-from selenese.patterns import create_pattern
+from locators import create_locator
+from patterns import create_pattern
 from time import sleep
 
 
@@ -142,7 +143,7 @@ class Executor(object):
         pass
 
     def type(self, target, value):
-        pass
+        create_locator(target).get_element(self.webdriver).send_keys(value)
 
     def typeKeys(self, target, value):
         create_locator(target).get_element(self.webdriver).send_keys(value)
@@ -261,3 +262,69 @@ class Executor(object):
 
     def storeBodyText(self, target, value):
         self._storage[target] = self.webdriver.find_element_by_tag_name('body').text
+
+    def verifyText(self, target, value):
+        locator = create_locator(target)
+        pattern = create_pattern(value)
+        return pattern.compare(locator.get_element(self.webdriver).text)
+
+    def pause(self, target, value):
+        sleep((float(target)/1000))
+        return
+
+    def waitForText(self, target, value):
+        locator = create_locator(target)
+        pattern = create_pattern(value)
+        print locator.get_element(self.webdriver).text
+        return pattern.compare(locator.get_element(self.webdriver).text)
+
+    def waitForTextNotPresent(self, target, value):
+        return self.assertTextPresent(target, value) == False
+
+    def waitForTextPresent(self, target, value):
+        return self.assertTextPresent(target, value)
+   
+    def waitForElement(self, target, value):
+        return self.visibility_of_element_located(target)
+   
+    def waitForPageToLoad(self, target, value):
+        pass
+
+    def sendKeys(self, target, value):
+        create_locator(target).get_element(self.webdriver).send_keys(value)
+
+    def select(self, target, value):
+        locator = create_locator(target)
+        select = Select(locator.get_element(self.webdriver))
+        select.select_by_visible_text(value)
+
+
+    def waitForText(self, target, value):
+        locator = create_locator(target)
+        pattern = create_pattern(value)
+        for i in range(self.timeout):
+            sleep(1)
+            try:
+                pattern.compare(locator.get_element(self.webdriver).text)
+            except: continue
+            return True
+        return False
+
+    def waitForElementPresent(self, target, value):
+        locator = create_locator(target)
+        for i in range(self.timeout):
+            sleep(1)
+            try:
+                locator.get_element(self.webdriver)
+            except: continue
+            return True
+        return False
+
+    def selectFrame(self, target, value):
+        locator = create_locator(target).get_element(self.webdriver)
+        self.webdriver.switch_to.frame(locator)
+
+    def hover(self, target, value):
+        locator = create_locator(target).get_element(self.webdriver)
+        hover = ActionChains(self.webdriver).move_to_element(locator)
+        hover.perform()

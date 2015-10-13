@@ -1,6 +1,6 @@
-from selenese.testcases import TestCase, TestRunner
-from selenese.locators import create_locator
-from selenese.patterns import create_pattern
+import testcases
+import locators
+import patterns 
 
 
 __version__ = '0.1'

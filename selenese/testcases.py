@@ -1,7 +1,8 @@
 from lxml import html
-from selenese.commands import Executor
+from commands import Executor
 from shutil import copyfileobj
 import os
+import logging
 
 
 class Failure(Exception):
@@ -78,9 +79,14 @@ class TestRunner(object):
         executor = Executor(self.testcase, webdriver)
         results = TestResults(self.testcase, executor)
         for command in self.testcase:
+            print("%s - %s - %s" % (str(command.command), str(command.target), str(command.value)))
             if command.command.endswith('AndWait'):
                 command_name = command.command[:-7]
                 wait = True
+            elif command.command.startswith('waitFor') and command.command is not 'waitForPageToLoad':
+                command_name = command.command
+                executor._andWait()
+                wait = False
             else:
                 command_name = command.command
                 wait = False
